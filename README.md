@@ -1,6 +1,6 @@
 ![Screenshot](skins/EcowittConsoleEmulator/Screenshot.png)
 
-# weewx-ecowitt_console_emulator — an Ecowitt console emulator skin for WeeWX 5
+# weewx-ecowitt_console_emulator — an Ecowitt console emulator skin for WeeWX 5 using Belchertown MQTT
 
 A full-screen, landscape dashboard for a wall or desk tablet, laid out like the
 Ecowitt WH2560 / HP2560 console, in a navy-blue palette: outdoor temperature
@@ -21,6 +21,14 @@ fields it adds (10-minute wind direction, max daily gust, feels-like, the second
 rain gauge in `p_rain`, sensor batteries and signal). Without it the skin uses
 its own live file and works the extras out itself (see
 [Fields](#fields-the-dashboard-uses)). Only the sensors you actually have are shown.
+
+## About this fork / AI assistance
+
+EcoMQ is a fork of [Millardiang/weewx-ecowitt_console_emulator](https://github.com/Millardiang/weewx-ecowitt_console_emulator)
+(GPL-3.0; original copyright preserved, see "Licence" above). The changes in
+this fork were developed with AI assistance using Claude (Claude.ai and Claude
+Code, by Anthropic), directed, reviewed and tested by the maintainer. Commits
+made with Claude carry a `Co-Authored-By` trailer.
 
 ### Layouts
 
@@ -388,11 +396,3 @@ The translations reuse wording from
 
 Ecowitt is a trademark of its owner; this project is not affiliated with
 Ecowitt. All icons are original SVG drawings.
-
-## About this fork / AI assistance
-
-EcoMQ is a fork of [Millardiang/weewx-ecowitt_console_emulator](https://github.com/Millardiang/weewx-ecowitt_console_emulator)
-(GPL-3.0; original copyright preserved, see "Licence" above). The changes in
-this fork were developed with AI assistance using Claude (Claude.ai and Claude
-Code, by Anthropic), directed, reviewed and tested by the maintainer. Commits
-made with Claude carry a `Co-Authored-By` trailer.
