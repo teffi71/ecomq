@@ -22,14 +22,6 @@ rain gauge in `p_rain`, sensor batteries and signal). Without it the skin uses
 its own live file and works the extras out itself (see
 [Fields](#fields-the-dashboard-uses)). Only the sensors you actually have are shown.
 
-## About this fork / AI assistance
-
-EcoMQ is a fork of [Millardiang/weewx-ecowitt_console_emulator](https://github.com/Millardiang/weewx-ecowitt_console_emulator)
-(GPL-3.0; original copyright preserved, see "Licence" above). The changes in
-this fork were developed with AI assistance using Claude (Claude.ai and Claude
-Code, by Anthropic), directed, reviewed and tested by the maintainer. Commits
-made with Claude carry a `Co-Authored-By` trailer.
-
 ### Layouts
 
 The page picks a layout from the shape of the screen and switches when the
@@ -43,6 +35,14 @@ device is rotated:
 
 **Settings → Layout** can force one of them (Auto, Landscape, Portrait, Phone);
 the choice is kept in the browser. "Add to Home screen" apps can rotate freely.
+
+## About this fork / AI assistance
+
+EcoMQ is a fork of [Millardiang/weewx-ecowitt_console_emulator](https://github.com/Millardiang/weewx-ecowitt_console_emulator)
+(GPL-3.0; original copyright preserved, see "Licence" above). The changes in
+this fork were developed with AI assistance using Claude (Claude.ai and Claude
+Code, by Anthropic), directed, reviewed and tested by the maintainer. Commits
+made with Claude carry a `Co-Authored-By` trailer.
 
 ## What's in the package
 
