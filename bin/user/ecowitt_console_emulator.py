@@ -65,7 +65,7 @@ from weeutil.weeutil import (TimeSpan, archiveDaySpan, archiveWeekSpan, archiveM
 
 log = logging.getLogger(__name__)
 
-VERSION = "1.0.0"
+VERSION = "0.1.0"
 DRIVER_SECTION = 'EcowittGateway'
 DRIVER_LEGACY_SECTION = 'EcowittHttp'
 
@@ -384,6 +384,32 @@ def build_dashboard_config(skin_dict, config_dict=None):
         live_fields.update(e['field'] for e in cfg[key] if e['field'])
     cfg['groups'] = {f: weewx.units.obs_group_dict.get(f) for f in sorted(live_fields)
                      if weewx.units.obs_group_dict.get(f)}
+
+    # EcoMQ: MQTT live source (see DESIGN.md sections 3-5). Read from weewx.conf
+    # [StdReport][[EcowittConsoleEmulatorReport]][[[Extras]]], not skin.conf (overwritten on
+    # update) -- same `extras` dict as every setting above, which already reflects that
+    # merge. Belchertown-compatible key names so values can be copied from an existing
+    # Belchertown setup. The password is never logged; anonymous read-only is recommended
+    # (PLAN.md D2) and is the default.
+    def _mqtt_int(key, default):
+        v = extras.get(key, default)
+        try:
+            return to_int(v)
+        except (ValueError, TypeError):
+            log.warning("ecowitt_console_emulator: invalid %s %r, using default %s", key, v, default)
+            return default
+
+    cfg['mqtt'] = {
+        'enabled': to_bool(extras.get('mqtt_enabled', False)),
+        'websockets_host': str(extras.get('mqtt_websockets_host', '')),
+        'websockets_port': _mqtt_int('mqtt_websockets_port', 9001),
+        'websockets_ssl': to_bool(extras.get('mqtt_websockets_ssl', True)),
+        'websockets_path': str(extras.get('mqtt_websockets_path', '/')),
+        'topic': str(extras.get('mqtt_topic', 'weather/loop')),
+        'username': str(extras.get('mqtt_username', '')),
+        'password': str(extras.get('mqtt_password', '')),
+        'stale_seconds': _mqtt_int('mqtt_stale_seconds', 30),
+    }
     return cfg
 
 
@@ -422,7 +448,11 @@ class EcowittConsoleEmulatorData(SearchList):
             if period != 'calyear' and not db.getRecord(stop):
                 stop = db.lastGoodStamp() or stop
             return self._chart_json(db, period, stop, timespan)
-        return [{'ecce_json': data_json, 'ecce_jv': _jv, 'ecce_version': self._asset_version(), 'ecce_chart': chart}]
+        # EcoMQ: lets index.html.tmpl skip loading mqtt.min.js (dist bundle, ~340 kB)
+        # entirely when the MQTT live source isn't configured (the default).
+        mqtt_enabled = bool(self.cfg.get('mqtt', {}).get('enabled'))
+        return [{'ecce_json': data_json, 'ecce_jv': _jv, 'ecce_version': self._asset_version(), 'ecce_chart': chart,
+                 'ecce_mqtt_enabled': mqtt_enabled}]
 
     def _asset_version(self):
         sd = self.generator.skin_dict

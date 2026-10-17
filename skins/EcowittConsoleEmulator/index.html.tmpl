@@ -76,5 +76,11 @@ window.ECCE_INITIAL = #include "ecce_payload.inc"
 ;
 </script>
 <script src="js/console.js?v=$ecce_version"></script>
+<!-- EcoMQ: only loaded when mqtt_enabled is set in [Extras] (DESIGN.md section 5); order matters. -->
+#if $ecce_mqtt_enabled
+<script src="js/vendor/mqtt.min.js?v=$ecce_version"></script>
+<script src="js/mqtt-adapter.js?v=$ecce_version"></script>
+<script src="js/mqtt-live.js?v=$ecce_version"></script>
+#end if
 </body>
 </html>

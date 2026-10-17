@@ -7,6 +7,23 @@ version numbers follow the rules in [VERSIONING.md](VERSIONING.md).
 
 ## [Unreleased]
 
+## [0.1.0] – 2026-10-15
+
+First EcoMQ test build. Forked from weewx-ecowitt_console_emulator 1.0.0; EcoMQ restarts its
+own version numbering from 0.1.0 rather than continuing upstream's, since it is a separate,
+independently-versioned fork (not a continuation of the official release line).
+
+- Fork EcoMQ: development with Claude (Claude.ai / Claude Code); MQTT live source planned, see DESIGN.md.
+- Added an MQTT live-data source as an alternative to polling `live.json`, off by default
+  (`mqtt_enabled = false`): `js/mqtt-adapter.js` (payload parsing/unit conversion/field
+  mapping), `js/mqtt-live.js` (the websocket connection), `js/vendor/mqtt.min.js` (mqtt.js
+  5.16.1, vendored, MIT). `console.js` gained a shared `applyLiveData`/`applyLiveModel` path
+  and a `window.ECCE_HOOKS` interface so both `live.json` and MQTT feed the same model; the
+  header Wi-Fi icon now names the active source.
+- New `[Extras]` settings (Belchertown-compatible names, see README/DESIGN.md): `mqtt_enabled`,
+  `mqtt_websockets_host`, `mqtt_websockets_port`, `mqtt_websockets_ssl`, `mqtt_websockets_path`,
+  `mqtt_topic`, `mqtt_username`, `mqtt_password`, `mqtt_stale_seconds`.
+
 ## [1.0.0] – 2026-10-07
 
 First public release. A WeeWX 5 skin and extension that turns a tablet, phone or

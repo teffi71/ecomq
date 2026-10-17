@@ -30,6 +30,7 @@
   var S = {
     arch: null, alm: null, cfg: null, opts: null,
     live: null, liveFails: 0,
+    liveSource: null, mqttLastSeen: 0, // EcoMQ: which source last wrote S.live, and MQTT's own freshness
     windBuf: [], windAngle: null, windAvgAngle: null,
     chIdx: 0, groundIdx: 0, pmIdx: 0, rainSrc: null,
     baroMode: null, wakeLock: null
@@ -465,7 +466,8 @@
   function renderHeader() {
     var col, tip, a = S.arch;
     var archAge = a ? now() - a.archiveTime : Infinity, maxArch = ((a && a.interval) || 300) * 2 + 180;
-    if (liveFresh()) { col = 'var(--good)'; tip = _t('Live data, {0} s old', Math.round(now() - S.live.written)); }
+    // EcoMQ: name the active source in the tooltip (MQTT or the live.json poller).
+    if (liveFresh()) { col = 'var(--good)'; tip = _t('Live data ({0}), {1} s old', S.liveSource === 'mqtt' ? 'MQTT' : 'live.json', Math.round(now() - S.live.written)); }
     else if (archAge < maxArch) { col = 'var(--warn)'; tip = _t('Archive data only ({0} min old)', Math.round(archAge / 60)); }
     else { col = 'var(--bad)'; tip = _t('Data is stale'); }
     var h = '<span title="' + esc(tip) + '">' + I.wifi(col) + '</span>';
@@ -1350,18 +1352,41 @@
       if (changed) renderAll(); else { safe(renderSky, 'sky'); safe(renderHeader, 'header'); }
     }).catch(function () { safe(renderHeader, 'header'); });
   }
+  // EcoMQ: shared by the live.json poller and the MQTT hook below, so both sources write
+  // into S.live/S.windBuf the same way and renderHeader()/lv()/pick() need no changes.
+  // live.json always carries the full current state, so it replaces S.live outright, exactly
+  // as before EcoMQ; MQTT packets are partial, so they merge into the existing S.live.data.
+  // receivedAt (seconds, optional): when the source actually saw this data, if different
+  // from "now" -- e.g. mqtt-live.js replaying a message that arrived before console.js was
+  // ready. Drives S.mqttLastSeen so a replayed-but-stale message can't look freshly arrived.
+  function applyLiveData(j, source, receivedAt) {
+    if (source === 'mqtt') {
+      if (!S.live) S.live = { written: 0, data: {} };
+      S.live.written = j.written;
+      Object.keys(j.data || {}).forEach(function (k) { S.live.data[k] = j.data[k]; });
+    } else {
+      S.live = j;
+    }
+    var fm = S.cfg.fields, d = S.live.data || {};
+    S.liveSource = source;
+    if (source === 'mqtt') S.mqttLastSeen = isNum(receivedAt) ? receivedAt : now();
+    if (isNum(d[fm.windSpeed])) {
+      S.windBuf.push({ t: S.live.written, v: d[fm.windSpeed], d: isNum(d[fm.windDir]) ? d[fm.windDir] : null });
+      while (S.windBuf.length && S.live.written - S.windBuf[0].t > 600) S.windBuf.shift();
+    }
+  }
   function fetchLive() {
+    // EcoMQ: skip the live.json poll entirely while MQTT is delivering fresh data.
+    if (S.cfg && S.cfg.mqtt && S.cfg.mqtt.enabled && S.mqttLastSeen &&
+        (now() - S.mqttLastSeen) < (S.cfg.mqtt.stale_seconds || 30)) return Promise.resolve();
     if (!S.cfg || !S.cfg.live_url) return Promise.resolve();
     return getJSON(S.cfg.live_url).then(function (raw) {
       S.liveFails = 0;
       var j = normaliseLive(raw);
-      if (!j || (S.live && j.written === S.live.written)) return;
-      S.live = j;
-      var fm = S.cfg.fields, d = j.data || {};
-      if (isNum(d[fm.windSpeed])) {
-        S.windBuf.push({ t: j.written, v: d[fm.windSpeed], d: isNum(d[fm.windDir]) ? d[fm.windDir] : null });
-        while (S.windBuf.length && j.written - S.windBuf[0].t > 600) S.windBuf.shift();
-      }
+      // EcoMQ: unchanged for live.json-only setups -- S.liveSource is only ever 'live.json'
+      // there, so this extra clause is a no-op; it only matters right after MQTT was active.
+      if (!j || (S.live && j.written === S.live.written && S.liveSource === 'live.json')) return;
+      applyLiveData(j, 'live.json');
       renderAll();
     }).catch(function () { S.liveFails++; safe(renderHeader, 'header'); });
   }
@@ -1392,6 +1417,36 @@
     var delay = S.liveFails > 3 ? Math.max(60, base) : base;  // back off when there is no live file
     setTimeout(function () { fetchLive().then(scheduleLive, scheduleLive); }, delay * 1000);
   }
+  // EcoMQ: the public hook mqtt-live.js (or any other future live-data source) talks to.
+  // Assigned at IIFE scope -- not inside init() -- so it already exists by the time
+  // mqtt-live.js's own <script> tag runs, even though S.cfg itself is only set in init().
+  var mqttLastRender = 0, mqttRenderTimer = null;
+  function applyLiveModel(model, source, receivedAt) {
+    if (!S.cfg) return; // not ready yet; the caller is expected to queue and replay once isReady()
+    var written = isNum(model && model.written) ? model.written : Math.round(now());
+    var data = {};
+    Object.keys(model || {}).forEach(function (k) { if (k !== 'written') data[k] = model[k]; });
+    applyLiveData({ written: written, data: data }, source || 'mqtt', receivedAt);
+    var t = now();
+    if (t - mqttLastRender >= 1) {
+      // throttle to at most one render per second...
+      mqttLastRender = t;
+      if (mqttRenderTimer) { clearTimeout(mqttRenderTimer); mqttRenderTimer = null; }
+      renderAll();
+    } else if (!mqttRenderTimer) {
+      // ...but never drop the last packet of a burst: render once the window ends.
+      mqttRenderTimer = setTimeout(function () {
+        mqttRenderTimer = null;
+        mqttLastRender = now();
+        renderAll();
+      }, Math.max(0, (1 - (t - mqttLastRender)) * 1000));
+    }
+  }
+  window.ECCE_HOOKS = {
+    applyLiveModel: applyLiveModel,
+    isReady: function () { return !!S.cfg; },
+    getConfig: function () { return (S.cfg && S.cfg.mqtt) || null; }
+  };
 
   // ---------------------------------------------------------------- init
   // ---------------------------------------------------------------- layout

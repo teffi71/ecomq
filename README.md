@@ -386,3 +386,11 @@ The translations reuse wording from
 
 Ecowitt is a trademark of its owner; this project is not affiliated with
 Ecowitt. All icons are original SVG drawings.
+
+## About this fork / AI assistance
+
+EcoMQ is a fork of [Millardiang/weewx-ecowitt_console_emulator](https://github.com/Millardiang/weewx-ecowitt_console_emulator)
+(GPL-3.0; original copyright preserved, see "Licence" above). The changes in
+this fork were developed with AI assistance using Claude (Claude.ai and Claude
+Code, by Anthropic), directed, reviewed and tested by the maintainer. Commits
+made with Claude carry a `Co-Authored-By` trailer.
