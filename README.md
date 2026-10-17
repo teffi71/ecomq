@@ -1,3 +1,5 @@
+![Screenshot](skins/EcowittConsoleEmulator/Screenshot 2026-10-17 at 12.33.50.png)
+
 # weewx-ecowitt_console_emulator — an Ecowitt console emulator skin for WeeWX 5
 
 A full-screen, landscape dashboard for a wall or desk tablet, laid out like the
