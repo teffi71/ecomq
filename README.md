@@ -1,4 +1,4 @@
-![Screenshot](skins/EcowittConsoleEmulator/Screenshot 2026-10-17 at 12.33.50.png)
+![Screenshot](Screenshot 2026-10-17 at 12.33.50.png)
 
 # weewx-ecowitt_console_emulator — an Ecowitt console emulator skin for WeeWX 5
 
