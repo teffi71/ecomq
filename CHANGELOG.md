@@ -7,13 +7,16 @@ version numbers follow the rules in [VERSIONING.md](VERSIONING.md).
 
 ## [Unreleased]
 
+### Fixed
+- `skin.conf`: `copy_always` now includes `js/vendor/*.js`. Before, the vendored `mqtt.min.js` was installed into the skin folder but never copied to the web folder, so the page answered 404 for it, MQTT never started and the dashboard stayed on `live.json`.
+
 ## [0.1.0] – 2026-10-15
 
 First EcoMQ test build. Forked from weewx-ecowitt_console_emulator 1.0.0; EcoMQ restarts its
 own version numbering from 0.1.0 rather than continuing upstream's, since it is a separate,
 independently-versioned fork (not a continuation of the official release line).
 
-- Fork EcoMQ: development with Claude (Claude.ai / Claude Code); MQTT live source planned, see DESIGN.md.
+- Fork EcoMQ: developed with Claude (Claude.ai / Claude Code); see DESIGN.md for the design.
 - Added an MQTT live-data source as an alternative to polling `live.json`, off by default
   (`mqtt_enabled = false`): `js/mqtt-adapter.js` (payload parsing/unit conversion/field
   mapping), `js/mqtt-live.js` (the websocket connection), `js/vendor/mqtt.min.js` (mqtt.js
