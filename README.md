@@ -1,4 +1,4 @@
-![Screenshot](skins/EcowittConsoleEmulator/Screenshot.png)
+![Screenshot](docs/Screenshot.png)
 
 # weewx-ecowitt_console_emulator — an Ecowitt console emulator skin for WeeWX 5 using Belchertown MQTT
 
