@@ -7,10 +7,7 @@ version numbers follow the rules in [VERSIONING.md](VERSIONING.md).
 
 ## [Unreleased]
 
-### Fixed
-- `skin.conf`: `copy_always` now includes `js/vendor/*.js`. Before, the vendored `mqtt.min.js` was installed into the skin folder but never copied to the web folder, so the page answered 404 for it, MQTT never started and the dashboard stayed on `live.json`.
-
-## [0.1.0] – 2026-10-15
+## [0.1.0] – 2026-10-19
 
 First EcoMQ test build. Forked from weewx-ecowitt_console_emulator 1.0.0; EcoMQ restarts its
 own version numbering from 0.1.0 rather than continuing upstream's, since it is a separate,
@@ -26,6 +23,9 @@ independently-versioned fork (not a continuation of the official release line).
 - New `[Extras]` settings (Belchertown-compatible names, see README/DESIGN.md): `mqtt_enabled`,
   `mqtt_websockets_host`, `mqtt_websockets_port`, `mqtt_websockets_ssl`, `mqtt_websockets_path`,
   `mqtt_topic`, `mqtt_username`, `mqtt_password`, `mqtt_stale_seconds`.
+- Fixed before release: `skin.conf` `copy_always` now includes `js/vendor/*.js`, so the vendored
+  `mqtt.min.js` is copied to the web folder. Without it the page answered 404 for that file,
+  MQTT never started and the dashboard stayed on `live.json`.
 
 ## [1.0.0] – 2026-10-07
 
@@ -112,7 +112,8 @@ Released under the GNU General Public License, version 3 or later (see LICENSE).
 - weewx-EcowittGateway is optional; the skin works with any driver for an Ecowitt
   gateway or console.
 
-[Unreleased]: https://github.com/Millardiang/weewx-ecowitt_console_emulator/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/teffi71/ecomq/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/teffi71/ecomq/releases/tag/v0.1.0
 [1.0.0]: https://github.com/Millardiang/weewx-ecowitt_console_emulator/releases/tag/v1.0.0
 
 ---
